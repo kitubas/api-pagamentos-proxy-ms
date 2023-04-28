@@ -4,8 +4,16 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+
+@Entity
 public class Pagamento {
 
+	@Id
+	@GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     private LocalDateTime dataHora;
     private BigDecimal valor;
@@ -52,5 +60,13 @@ public class Pagamento {
 
     public void setContaOrigem(String contaOrigem) {
         this.contaOrigem = contaOrigem;
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+    	if (obj instanceof Pagamento) {
+    		return ((Pagamento)obj).getId().equals(this.getId());
+		}
+    	return false;
     }
 }

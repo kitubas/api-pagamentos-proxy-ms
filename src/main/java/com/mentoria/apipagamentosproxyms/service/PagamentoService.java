@@ -6,8 +6,7 @@ import java.util.UUID;
 
 public interface PagamentoService {
 
+	Pagamento criarPagamento(Pagamento pagamento);
 
-    void criarPagamento(Pagamento pagamento);
-
-    Pagamento obterPagamento(UUID uuid);
+	Pagamento obterPagamento(UUID uuid);
 }
