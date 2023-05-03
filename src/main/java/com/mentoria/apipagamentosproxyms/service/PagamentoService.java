@@ -1,12 +1,17 @@
 package com.mentoria.apipagamentosproxyms.service;
 
+import com.mentoria.apipagamentosproxyms.dto.PagamentoDTO;
 import com.mentoria.apipagamentosproxyms.model.Pagamento;
 
 import java.util.UUID;
 
 public interface PagamentoService {
 
-	Pagamento criarPagamento(Pagamento pagamento);
+	Pagamento criarPagamento(PagamentoDTO pagamento);
 
 	Pagamento obterPagamento(UUID uuid);
+
+	void excluirPagamento(UUID id);
+
+	Pagamento editarPagamento(Pagamento pagamentoEditado);
 }

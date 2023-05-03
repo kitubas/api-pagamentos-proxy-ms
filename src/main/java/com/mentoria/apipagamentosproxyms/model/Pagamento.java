@@ -8,19 +8,28 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import lombok.*;
 
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@RequiredArgsConstructor
 @Entity
 public class Pagamento {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    private LocalDateTime dataHora;
+    private String dataHora;
+    @NonNull
     private BigDecimal valor;
+    @NonNull
     private String contaDestino;
 
+    @NonNull
     private String contaOrigem;
 
+    private Boolean executado;
 
     public BigDecimal getValor() {
         return valor;
@@ -46,11 +55,11 @@ public class Pagamento {
         this.id = id;
     }
 
-    public LocalDateTime getDataHora() {
+    public String getDataHora() {
         return dataHora;
     }
 
-    public void setDataHora(LocalDateTime dataHora) {
+    public void setDataHora(String dataHora) {
         this.dataHora = dataHora;
     }
 
@@ -61,11 +70,26 @@ public class Pagamento {
     public void setContaOrigem(String contaOrigem) {
         this.contaOrigem = contaOrigem;
     }
-    
+
+    public Boolean getExecutado() {
+        return executado;
+    }
+
+    public void setExecutado(Boolean executado) {
+        this.executado = executado;
+    }
+
     @Override
     public boolean equals(Object obj) {
     	if (obj instanceof Pagamento) {
-    		return ((Pagamento)obj).getId().equals(this.getId());
+
+            Pagamento pagamento = (Pagamento) obj;
+            return pagamento.getId().equals(this.id)
+                    && pagamento.getContaOrigem().equals(this.contaOrigem)
+                    && pagamento.getDataHora().equals(this.dataHora)
+                    && pagamento.getContaDestino().equals(this.contaDestino)
+                    && pagamento.getValor().compareTo(this.valor)==0
+                    && pagamento.getExecutado().equals(this.executado);
 		}
     	return false;
     }
