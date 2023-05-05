@@ -7,41 +7,35 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.mentoria.apipagamentosproxyms.dto.PagamentoDTO;
+import com.mentoria.apipagamentosproxyms.exceptions.EdicaoDeContaOrigemException;
 import com.mentoria.apipagamentosproxyms.exceptions.PagamentoNaoPodeSerExcluidoException;
 import com.mentoria.apipagamentosproxyms.mapper.PagamentoMapper;
 import com.mentoria.apipagamentosproxyms.respository.PagamentoRepository;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.mentoria.apipagamentosproxyms.model.Pagamento;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest//(classes = PagamentoServiceImpl.class)
 //@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PagamentoServiceImplTest {
 
-	@InjectMocks
-	PagamentoServiceImpl pagamentoService;
 
-	@Mock
-	PagamentoRepository pagamentoRepository;
 
-	@Mock
-	PagamentoMapper pagamentoMapper;
+	PagamentoRepository pagamentoRepository = Mockito.mock(PagamentoRepository.class);
+
+	PagamentoMapper pagamentoMapper = new PagamentoMapper();
+
+	PagamentoServiceImpl pagamentoService = new PagamentoServiceImpl(pagamentoRepository,pagamentoMapper);
 	PagamentoDTO pagamentoDTO;
 	void dadoUmPagamentoDTO(){
 		pagamentoDTO = new PagamentoDTO();
-		pagamentoDTO.setValor(new BigDecimal(999999));
+		pagamentoDTO.setValor(new BigDecimal(99999));
 		pagamentoDTO.setContaOrigem("Joao");
 		pagamentoDTO.setContaDestino("Santana");
 	}
@@ -50,23 +44,112 @@ class PagamentoServiceImplTest {
 
 		dadoUmPagamentoDTO();
 		whenSavingTheEntity();
-		whenGettingTheEntity();
 
 		var pagamentoCriado = pagamentoService.criarPagamento(pagamentoDTO);
+		whenGettingANonExecutedTheEntity(pagamentoCriado);
 		Pagamento pagamentoResgatado = pagamentoService.obterPagamento(pagamentoCriado.getId());
 
 		assertTrue(pagamentoDTO.getValor().compareTo(pagamentoResgatado.getValor())==0);
 		assertEquals(pagamentoDTO.getContaDestino(),pagamentoResgatado.getContaDestino());
 		assertEquals(pagamentoDTO.getContaOrigem(),pagamentoResgatado.getContaOrigem());
 		assertFalse(pagamentoResgatado.getExecutado());
+		assertEquals(pagamentoCriado.getDataHora(),pagamentoResgatado.getDataHora());
+		assertEquals(pagamentoCriado.getId(),pagamentoResgatado.getId());
 	}
 
-	private void whenGettingTheEntity() {
+	@Test
+	void excluirPagamentoComSucesso(){
+		dadoUmPagamentoDTO();
+		whenSavingTheEntity();
+		whenDeletingTheEntity();
+		var pagamentoCriado = pagamentoService.criarPagamento(pagamentoDTO);
+
+		whenGettingANonExecutedTheEntity(pagamentoCriado);
+		pagamentoService.excluirPagamento(pagamentoCriado.getId());
+
+		whenGettingANonExistentEntity();
+		assertThrows(NoSuchElementException.class,() -> pagamentoService.obterPagamento(pagamentoCriado.getId())) ;
+
+
+
+	}
+
+	@Test
+	void editarPagamentoComSucesso(){
+		dadoUmPagamentoDTO();
+		whenSavingTheEntity();
+		var pagamentoCriado = pagamentoService.criarPagamento(pagamentoDTO);
+
+		Pagamento pagamentoEditado = pagamentoCriado;
+		pagamentoEditado.setContaDestino("oxe");
+		pagamentoEditado.setValor(new BigDecimal(8888));
+
+//		whenGettingANonExecutedTheEntity(pagamentoEditado);
+		whenEditingTheEntity(pagamentoEditado);
+		Pagamento retornoPagamentoEditado = pagamentoService.editarPagamento(pagamentoEditado);
+
+		assertEquals(pagamentoEditado.getContaOrigem(),retornoPagamentoEditado.getContaOrigem());
+		assertEquals(pagamentoEditado.getValor(),retornoPagamentoEditado.getValor());
+		assertEquals(pagamentoEditado.getContaDestino(),retornoPagamentoEditado.getContaDestino());
+		assertEquals(pagamentoEditado.getId(), retornoPagamentoEditado.getId());
+		assertFalse(retornoPagamentoEditado.getExecutado());
+
+		assertTrue(pagamentoEditado.equals(retornoPagamentoEditado));
+
+		//assertEquals(pagamentoEditado,pagamentoService.obterPagamento(pagamentoCriado.getId()));
+
+	}
+
+	@Test
+	void exluirPagamentoJaExecutado(){
+
+		dadoUmPagamentoDTO();
+		whenSavingTheEntity();
+		var pagamentoCriado = pagamentoService.criarPagamento(pagamentoDTO);
+
+		givenAnExecutedEntity(pagamentoCriado);
+		assertThrows(PagamentoNaoPodeSerExcluidoException.class,() -> pagamentoService.excluirPagamento(pagamentoCriado.getId())) ;
+	}
+
+	@Test
+	void editarUmPagamentoJaExecutado(){
+		dadoUmPagamentoDTO();
+		whenSavingTheEntity();
+		var pagamentoCriado = pagamentoService.criarPagamento(pagamentoDTO);
+
+		Pagamento pagamentoEditado = pagamentoCriado;
+		pagamentoEditado.setContaDestino("oxe");
+		pagamentoEditado.setValor(new BigDecimal(8888));
+
+
+		givenAnExecutedEntity(pagamentoCriado);
+		assertThrows(PagamentoNaoPodeSerExcluidoException.class,() -> pagamentoService.editarPagamento(pagamentoEditado)) ;
+	}
+
+
+	@Test
+	void editarContaDeOrigemDoPagamento(){
+		dadoUmPagamentoDTO();
+		whenSavingTheEntity();
+		var pagamentoCriado = pagamentoService.criarPagamento(pagamentoDTO);
+
+		Pagamento pagamentoEditado = new Pagamento(pagamentoCriado.getId(),pagamentoCriado.getDataHora(),
+				pagamentoCriado.getValor(), pagamentoCriado.getContaDestino(),
+				pagamentoDTO.getContaOrigem(), pagamentoCriado.getExecutado());
+		pagamentoEditado.setContaOrigem("oxe");
+		pagamentoEditado.setValor(new BigDecimal(8888));
+
+
+		whenGettingANonExecutedTheEntity(pagamentoCriado);
+		assertThrows(EdicaoDeContaOrigemException.class,() -> pagamentoService.editarPagamento(pagamentoEditado)) ;
+	}
+
+	private void whenGettingANonExecutedTheEntity(Pagamento pagamentoCriado) {
 		when(pagamentoRepository.findById(Mockito.any())).thenReturn(Optional.of(Pagamento.builder()
-				.dataHora(LocalDateTime.now().toString())
-				.id(UUID.randomUUID())
-				.valor(new BigDecimal(99999))
-				.contaOrigem(pagamentoDTO.getContaOrigem())
+				.dataHora(pagamentoCriado.getDataHora())
+				.id(pagamentoCriado.getId())
+				.valor(pagamentoCriado.getValor())
+				.contaOrigem(pagamentoCriado.getContaOrigem())
 				.contaDestino(pagamentoDTO.getContaDestino())
 				.executado(false)
 				.build()));
@@ -85,59 +168,49 @@ class PagamentoServiceImplTest {
 	}
 
 
-	@Test
-	void excluirPagamentoComSucesso(){
-		dadoUmPagamentoDTO();
-		var pagamentoCriado = pagamentoService.criarPagamento(pagamentoDTO);
-
-		pagamentoService.excluirPagamento(pagamentoCriado.getId());
-
-		assertThrows(NoSuchElementException.class,() -> pagamentoService.obterPagamento(pagamentoCriado.getId())) ;
 
 
+	private void whenGettingANonExistentEntity() {
+		when(pagamentoRepository.findById(Mockito.any())).thenReturn(Optional.empty());
+	}
+
+	private void whenDeletingTheEntity() {
+		doNothing().when(pagamentoRepository).deleteById(Mockito.any());
 
 	}
 
-	@Test
-	void editarPagamentoComSucesso(){
-		dadoUmPagamentoDTO();
-		var pagamentoCriado = pagamentoService.criarPagamento(pagamentoDTO);
 
-		Pagamento pagamentoEditado = pagamentoCriado;
-		pagamentoEditado.setContaDestino("oxe");
-		pagamentoEditado.setValor(new BigDecimal(8888));
+	private void whenEditingTheEntity(Pagamento pagamentoEditado) {
+		when(pagamentoRepository.save(Mockito.any())).thenReturn(Pagamento.builder()
+				.dataHora(pagamentoEditado.getDataHora())
+				.id(pagamentoEditado.getId())
+				.valor(pagamentoEditado.getValor())
+				.contaOrigem(pagamentoDTO.getContaOrigem())
+				.contaDestino(pagamentoEditado.getContaDestino())
+				.executado(false)
+				.build());
 
-		Pagamento retornoPagamentoEditado = pagamentoService.editarPagamento(pagamentoEditado);
-
-		assertEquals(pagamentoEditado.getContaOrigem(),retornoPagamentoEditado.getContaOrigem());
-		assertEquals(pagamentoEditado.getValor(),retornoPagamentoEditado.getValor());
-		assertEquals(pagamentoEditado.getContaDestino(),retornoPagamentoEditado.getContaDestino());
-		assertEquals(pagamentoEditado.getId(), retornoPagamentoEditado.getId());
-		assertFalse(retornoPagamentoEditado.getExecutado());
-
-		Pagamento pagamento = pagamentoService.obterPagamento(pagamentoCriado.getId());
-		assertTrue(pagamentoEditado.equals(pagamento));
-
-		//assertEquals(pagamentoEditado,pagamentoService.obterPagamento(pagamentoCriado.getId()));
-
+		when(pagamentoRepository.findById(Mockito.any())).thenReturn(Optional.of(Pagamento.builder()
+				.dataHora(pagamentoEditado.getDataHora())
+				.id(pagamentoEditado.getId())
+				.valor(pagamentoEditado.getValor())
+				.contaOrigem(pagamentoEditado.getContaOrigem())
+				.contaDestino(pagamentoDTO.getContaDestino())
+				.executado(false)
+				.build()));
 	}
 
-	@Test//TODO
-	void exluirPagamentoJaExecutado(){
 
-		dadoUmPagamentoExecutado();
 
-		dadoUmPagamentoDTO();
-		var pagamentoCriado = pagamentoService.criarPagamento(pagamentoDTO);
-//
-//		pagamentoService.excluirPagamento(pagamentoCriado.getId());
-//
-//		assertThrows(NoSuchElementException.class,() -> pagamentoService.obterPagamento(pagamentoCriado.getId())) ;
-	}
-
-	private void dadoUmPagamentoExecutado() {
-
-	//when(pagamentoRepository.save())
+	private void givenAnExecutedEntity(Pagamento pagamentoCriado) {
+		when(pagamentoRepository.findById(Mockito.any())).thenReturn(Optional.of(Pagamento.builder()
+				.dataHora(pagamentoCriado.getDataHora())
+				.id(pagamentoCriado.getId())
+				.valor(pagamentoCriado.getValor())
+				.contaOrigem(pagamentoCriado.getContaOrigem())
+				.contaDestino(pagamentoCriado.getContaDestino())
+				.executado(true)
+				.build()));
 
 
 	}

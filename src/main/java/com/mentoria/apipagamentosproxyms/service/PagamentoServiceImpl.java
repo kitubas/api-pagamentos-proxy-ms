@@ -8,12 +8,14 @@ import com.mentoria.apipagamentosproxyms.dto.PagamentoDTO;
 import com.mentoria.apipagamentosproxyms.exceptions.EdicaoDeContaOrigemException;
 import com.mentoria.apipagamentosproxyms.exceptions.PagamentoNaoPodeSerExcluidoException;
 import com.mentoria.apipagamentosproxyms.mapper.PagamentoMapper;
+import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.mentoria.apipagamentosproxyms.model.Pagamento;
 import com.mentoria.apipagamentosproxyms.respository.PagamentoRepository;
 
+@AllArgsConstructor
 @Service
 public class PagamentoServiceImpl implements PagamentoService {
 
@@ -53,7 +55,7 @@ public class PagamentoServiceImpl implements PagamentoService {
 			if (pagamento.getExecutado()) {
 				throw new PagamentoNaoPodeSerExcluidoException();
 			}
-			if (!pagamento.getContaOrigem().equals(pagamentoEditado.getContaOrigem()) ){
+			if (!pagamentoEditado.getContaOrigem().equals(pagamento.getContaOrigem()) ){
 				throw new EdicaoDeContaOrigemException();
 			}
 			return repository.save(pagamentoEditado);
