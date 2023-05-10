@@ -10,9 +10,9 @@ import java.time.LocalDateTime;
 public class PagamentoMapper {
 
     public Pagamento pagamentoDtoToModel(PagamentoDTO pagamentoDTO){
-        return new Pagamento(pagamentoDTO.getValor(),
-                pagamentoDTO.getContaDestino(),
-                pagamentoDTO.getContaOrigem());
+        return new Pagamento(pagamentoDTO.valor(),
+                pagamentoDTO.contaDestino(),
+                pagamentoDTO.contaOrigem());
     }
 
 }

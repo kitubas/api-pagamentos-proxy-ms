@@ -13,5 +13,5 @@ public interface PagamentoService {
 
 	void excluirPagamento(UUID id);
 
-	Pagamento editarPagamento(Pagamento pagamentoEditado);
+	Pagamento editarPagamento(UUID id, PagamentoDTO pagamentoEditado);
 }

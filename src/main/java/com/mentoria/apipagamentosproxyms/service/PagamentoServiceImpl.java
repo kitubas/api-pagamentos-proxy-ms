@@ -1,12 +1,12 @@
 package com.mentoria.apipagamentosproxyms.service;
 
 import java.time.LocalDateTime;
-import java.util.NoSuchElementException;
 import java.util.UUID;
 
 import com.mentoria.apipagamentosproxyms.dto.PagamentoDTO;
 import com.mentoria.apipagamentosproxyms.exceptions.EdicaoDeContaOrigemException;
 import com.mentoria.apipagamentosproxyms.exceptions.PagamentoNaoPodeSerExcluidoException;
+import com.mentoria.apipagamentosproxyms.exceptions.MissingRequiredDTOFieldsException;
 import com.mentoria.apipagamentosproxyms.mapper.PagamentoMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,11 +26,13 @@ public class PagamentoServiceImpl implements PagamentoService {
 	PagamentoMapper pagamentoMapper;
 	@Override
 	public Pagamento criarPagamento(PagamentoDTO pagamentoDTO) {
-		Pagamento pagamento = pagamentoMapper.pagamentoDtoToModel(pagamentoDTO);
-		pagamento.setDataHora(LocalDateTime.now().toString());
-		pagamento.setExecutado(false);
-		//TODO colocar msg na fila
-		return repository.save(pagamento);
+
+			Pagamento pagamento = pagamentoMapper.pagamentoDtoToModel(pagamentoDTO);
+			pagamento.setDataHora(LocalDateTime.now().toString());
+			pagamento.setExecutado(false);
+			//TODO colocar msg na fila
+			return repository.save(pagamento);
+
 	}
 
 	@Override
@@ -49,16 +51,17 @@ public class PagamentoServiceImpl implements PagamentoService {
 	}
 
 	@Override
-	public Pagamento editarPagamento(Pagamento pagamentoEditado) {
-
-			Pagamento pagamento = obterPagamento(pagamentoEditado.getId());
+	public Pagamento editarPagamento(UUID id, PagamentoDTO pagamentoEditado)  {
+		Pagamento pagamento = obterPagamento(id);
 			if (pagamento.getExecutado()) {
 				throw new PagamentoNaoPodeSerExcluidoException();
 			}
-			if (!pagamentoEditado.getContaOrigem().equals(pagamento.getContaOrigem()) ){
+			if (!pagamentoEditado.contaOrigem().equals(pagamento.getContaOrigem()) ){
 				throw new EdicaoDeContaOrigemException();
 			}
-			return repository.save(pagamentoEditado);
+			pagamento.setValor(pagamentoEditado.valor());
+			pagamento.setContaDestino(pagamentoEditado.contaDestino());
+			return repository.save(pagamento);
 
 
 

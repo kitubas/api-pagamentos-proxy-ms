@@ -1,17 +1,8 @@
 package com.mentoria.apipagamentosproxyms.dto;
 
 
-import lombok.Data;
+import lombok.NonNull;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
-@Data
-public class PagamentoDTO {
-
-    private BigDecimal valor;
-    private String contaDestino;
-
-    private String contaOrigem;
-
-}
+public record PagamentoDTO(@NonNull BigDecimal valor, @NonNull String contaOrigem, @NonNull String contaDestino) {}
