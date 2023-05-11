@@ -1,107 +1,171 @@
 package com.mentoria.apipagamentosproxyms.controller;
 
 import com.mentoria.apipagamentosproxyms.dto.PagamentoDTO;
+import com.mentoria.apipagamentosproxyms.exceptions.EdicaoDeContaOrigemException;
 import com.mentoria.apipagamentosproxyms.exceptions.PagamentoNaoPodeSerExcluidoException;
 import com.mentoria.apipagamentosproxyms.model.Pagamento;
 import com.mentoria.apipagamentosproxyms.service.PagamentoService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.HttpStatus;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
-//@WebMvcTest(PagamentoController.class)
+@AutoConfigureMockMvc
 public class PagamentoControllerTest {
 
 
-    @Mock
+    @MockBean
     PagamentoService pagamentoService;
 
-    @InjectMocks
-    PagamentoController pagamentoController;
 
     @Autowired
     MockMvc mockMvc;
 
     PagamentoDTO pagamentoDTO;
+    @BeforeEach
     void dadoUmPagamentoDTO(){
         pagamentoDTO = new PagamentoDTO(new BigDecimal(99999),"Joao","Santana");
     }
 
-    @Test
-    void criarPagamentoComSucesso(){
 
-        dadoUmPagamentoDTO();
+    String pagamentoDTOJson(){
+        return "{\n" +
+                "  \"valor\": \"" + pagamentoDTO.valor() + "\",\n" +
+                "  \"contaOrigem\": \"" + pagamentoDTO.contaOrigem() + "\",\n" +
+                "  \"contaDestino\": \"" + pagamentoDTO.contaDestino() + "\"\n" +
+                "}";
+    }
+    @Test
+    void criarPagamentoComSucesso() throws Exception {
         whenCreatingAPayment();
 
-        ResponseEntity<Pagamento> pagamento = pagamentoController.createPagamento(pagamentoDTO);
-
-        assertEquals(HttpStatus.CREATED,pagamento.getStatusCode());
-
+        mockMvc.perform(post("/pix/v1/pagamentos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(pagamentoDTOJson()))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id", notNullValue()))
+                .andExpect(jsonPath("$.valor", equalTo(pagamentoDTO.valor().intValue())))
+                .andExpect(jsonPath("$.contaOrigem", equalTo(pagamentoDTO.contaOrigem())))
+                .andExpect(jsonPath("$.contaDestino", is(pagamentoDTO.contaDestino())));
     }
 
     @Test
     void excluirPagamentoComSucesso() throws Exception {
         whenDeletingAPayment();
         UUID id = UUID.randomUUID();
-        pagamentoController.excluirPagamento(id);
-        verify(pagamentoService, times(1)).excluirPagamento(id);
 
-        mockMvc = MockMvcBuilders.standaloneSetup(pagamentoController).build();
-        mockMvc.perform(delete("/pix/v1/delete/" + id.toString()))
+        mockMvc.perform(delete("/pix/v1/pagamentos/" + id.toString()))
                 .andExpect(status().isNoContent());
     }
 
     @Test
-    void editarPagamentoComSucesso(){
+    void editarPagamentoComSucesso() throws Exception {
         Pagamento pagamento = givenAPayment();
         whenEditingAPayment(pagamento);
-//        ResponseEntity<Pagamento> pagamentoRetornado = pagamentoController.editarPagamento(Mockito.any());
-//
-//        verify(pagamentoService,times(1)).editarPagamento(Mockito.any());
-//
-//        mockMvc.perform(patch("/pix/v1/edit")
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .content("{\"nome\":\"" + suaEntidadeAtualizada.getNome() + "\"}"))
-//                .andExpect(status().isOk())
-//                .andExpect(jsonPath("$.id", is(suaEntidadeAtualizada.getId().intValue())))
-//                .andExpect(jsonPath("$.nome", is(suaEntidadeAtualizada.getNome())));
 
+
+        mockMvc.perform(put("/pix/v1/pagamentos/" + UUID.randomUUID().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(pagamentoDTOJson()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(pagamento.getId().toString())))
+                .andExpect(jsonPath("$.valor", equalTo(pagamento.getValor().intValue())))
+                .andExpect(jsonPath("$.contaDestino", is(pagamento.getContaDestino())));
+    }
+
+    @Test
+    void editarPagamentoJaExecutado() throws Exception {
+        givenANAlreadyExecutedPayment();
+
+        mockMvc.perform(put("/pix/v1/pagamentos/" + UUID.randomUUID().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(pagamentoDTOJson()))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void editarContaDeOrigemDoPagamento() throws Exception {
+        whenEditingOriginOfPayment();
+
+        mockMvc.perform(put("/pix/v1/pagamentos/" + UUID.randomUUID().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(pagamentoDTOJson()))
+                .andExpect(status().isBadRequest());
+    }
+    @Test
+    void exluirPagamentoJaExecutado() throws Exception {
+        givenANAlreadyExecutedPayment();
+
+        mockMvc.perform(delete("/pix/v1/pagamentos/" + UUID.randomUUID().toString()))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void criarPagamentoFaltandoCampos() throws Exception {
+        String requestBody = "{\n" +
+                "  \"contaOrigem\": \"" + pagamentoDTO.contaOrigem() + "\",\n" +
+                "  \"contaDestino\": \"" + pagamentoDTO.contaDestino() + "\"\n" +
+                "}";
+
+        mockMvc.perform(post("/pix/v1/pagamentos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody)).andDo(print())
+                .andExpect(status().isBadRequest());
 
     }
 
     @Test
-    void editarPagamentoJaExecutado(){
-        givenANAlreadyExecutedPayment();
+    void excluirPagamentoNaoEncontrado() throws Exception {
+        givenANotFoundPayment();
 
-//        assertThrows(PagamentoNaoPodeSerExcluidoException.class,() -> pagamentoController.editarPagamento(Mockito.any()));
+        mockMvc.perform(delete("/pix/v1/pagamentos/" + UUID.randomUUID().toString()))
+                .andExpect(status().isNotFound());
+    }
 
+    @Test
+    void editarPagamentoNaoEncontrado() throws Exception {
+        givenANotFoundPayment();
+
+        mockMvc.perform(put("/pix/v1/pagamentos/" + UUID.randomUUID().toString())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(pagamentoDTOJson()))
+                .andExpect(status().isNotFound());
+    }
+    private void givenANotFoundPayment() {
+        when(pagamentoService.editarPagamento(Mockito.any(), Mockito.any())).thenThrow(NoSuchElementException.class);
+        doThrow(NoSuchElementException.class).when(pagamentoService).excluirPagamento(Mockito.any());
+
+    }
+
+    private void whenEditingOriginOfPayment() {
+        when(pagamentoService.editarPagamento(Mockito.any(), Mockito.any())).thenThrow(EdicaoDeContaOrigemException.class);
     }
 
     private void givenANAlreadyExecutedPayment() {
-//        when(pagamentoService.editarPagamento(Mockito.any())).thenThrow(PagamentoNaoPodeSerExcluidoException.class);
+        when(pagamentoService.editarPagamento(Mockito.any(), Mockito.any())).thenThrow(PagamentoNaoPodeSerExcluidoException.class);
+        doThrow(PagamentoNaoPodeSerExcluidoException.class).when(pagamentoService).excluirPagamento(Mockito.any());
     }
 
     private void whenEditingAPayment(Pagamento pagamento) {
-//        when(pagamentoService.editarPagamento(Mockito.any())).thenReturn( pagamento);
+        when(pagamentoService.editarPagamento(Mockito.any(), Mockito.any())).thenReturn( pagamento);
     }
 
     private Pagamento givenAPayment() {

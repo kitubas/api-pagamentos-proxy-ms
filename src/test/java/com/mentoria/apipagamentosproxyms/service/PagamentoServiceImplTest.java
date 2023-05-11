@@ -21,8 +21,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest//(classes = PagamentoServiceImpl.class)
-//@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@SpringBootTest
 class PagamentoServiceImplTest {
 
 
@@ -47,7 +46,7 @@ class PagamentoServiceImplTest {
 		whenGettingANonExecutedTheEntity(pagamentoCriado);
 		Pagamento pagamentoResgatado = pagamentoService.obterPagamento(pagamentoCriado.getId());
 
-		assertTrue(pagamentoDTO.valor().compareTo(pagamentoResgatado.getValor())==0);
+		assertEquals(0, pagamentoDTO.valor().compareTo(pagamentoResgatado.getValor()));
 		assertEquals(pagamentoDTO.contaDestino(),pagamentoResgatado.getContaDestino());
 		assertEquals(pagamentoDTO.contaOrigem(),pagamentoResgatado.getContaOrigem());
 		assertFalse(pagamentoResgatado.getExecutado());

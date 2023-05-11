@@ -1,7 +1,6 @@
 package com.mentoria.apipagamentosproxyms.model;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import jakarta.persistence.Entity;
@@ -81,9 +80,8 @@ public class Pagamento {
 
     @Override
     public boolean equals(Object obj) {
-    	if (obj instanceof Pagamento) {
+    	if (obj instanceof Pagamento pagamento) {
 
-            Pagamento pagamento = (Pagamento) obj;
             return pagamento.getId().equals(this.id)
                     && pagamento.getContaOrigem().equals(this.contaOrigem)
                     && pagamento.getDataHora().equals(this.dataHora)
