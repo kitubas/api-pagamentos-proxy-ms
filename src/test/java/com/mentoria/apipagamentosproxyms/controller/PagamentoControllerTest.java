@@ -98,7 +98,7 @@ public class PagamentoControllerTest {
         mockMvc.perform(put("/pix/v1/pagamentos/" + UUID.randomUUID().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(pagamentoDTOJson()))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test
@@ -108,14 +108,14 @@ public class PagamentoControllerTest {
         mockMvc.perform(put("/pix/v1/pagamentos/" + UUID.randomUUID().toString())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(pagamentoDTOJson()))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
     @Test
     void exluirPagamentoJaExecutado() throws Exception {
         givenANAlreadyExecutedPayment();
 
         mockMvc.perform(delete("/pix/v1/pagamentos/" + UUID.randomUUID().toString()))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test
@@ -129,7 +129,6 @@ public class PagamentoControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody)).andDo(print())
                 .andExpect(status().isBadRequest());
-
     }
 
     @Test
@@ -149,10 +148,38 @@ public class PagamentoControllerTest {
                         .content(pagamentoDTOJson()))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    void obterPagamento() throws Exception {
+        Pagamento pagamento = givenAPayment();
+        whenGettingAPayment(pagamento);
+
+        mockMvc.perform(get("/pix/v1/pagamentos/" + UUID.randomUUID().toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(pagamento.getId().toString())))
+                .andExpect(jsonPath("$.valor", equalTo(pagamento.getValor().intValue())))
+                .andExpect(jsonPath("$.contaDestino", is(pagamento.getContaDestino())));
+    }
+
+    @Test
+    void obterPagamentoNaoEncontrado() throws Exception {
+        whenGettingANotFoundPayment();
+
+        mockMvc.perform(get("/pix/v1/pagamentos/" + UUID.randomUUID().toString()))
+                .andExpect(status().isNotFound());
+    }
+
+    private void whenGettingANotFoundPayment() {
+        when(pagamentoService.obterPagamento(Mockito.any())).thenThrow(NoSuchElementException.class);
+    }
+
+    private void whenGettingAPayment(Pagamento pagamento) {
+        when(pagamentoService.obterPagamento(Mockito.any())).thenReturn(pagamento);
+    }
+
     private void givenANotFoundPayment() {
         when(pagamentoService.editarPagamento(Mockito.any(), Mockito.any())).thenThrow(NoSuchElementException.class);
         doThrow(NoSuchElementException.class).when(pagamentoService).excluirPagamento(Mockito.any());
-
     }
 
     private void whenEditingOriginOfPayment() {

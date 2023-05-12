@@ -31,26 +31,19 @@ public class PagamentoController {
     @DeleteMapping("/pagamentos/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void excluirPagamento(@PathVariable UUID id) {
-        try {
             pagamentoService.excluirPagamento(id);
-        } catch (PagamentoNaoPodeSerExcluidoException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Pagamento já executado", e);
-        }catch (NoSuchElementException e){
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND);
-        }
     }
 
     @PutMapping("/pagamentos/{id}")
     public ResponseEntity<?> editarPagamento(@PathVariable UUID id, @RequestBody PagamentoDTO pagamentoEditado) {
-        try {
         return ResponseEntity.ok(pagamentoService.editarPagamento(id, pagamentoEditado));
-
-        }catch (PagamentoNaoPodeSerExcluidoException | EdicaoDeContaOrigemException e){
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }catch (NoSuchElementException e){
-            return ResponseEntity.notFound().build();
-
-        }
     }
+
+    @GetMapping("/pagamentos/{id}")
+    public ResponseEntity<?> obterPagamento(@PathVariable UUID id){
+            return ResponseEntity.ok(pagamentoService.obterPagamento(id));
+    }
+
+
 
 }
