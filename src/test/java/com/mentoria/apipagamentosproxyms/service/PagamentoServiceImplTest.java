@@ -12,10 +12,14 @@ import com.mentoria.apipagamentosproxyms.exceptions.PagamentoNaoPodeSerExcluidoE
 import com.mentoria.apipagamentosproxyms.mapper.PagamentoMapper;
 import com.mentoria.apipagamentosproxyms.respository.PagamentoRepository;
 import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.mentoria.apipagamentosproxyms.model.Pagamento;
+import org.springframework.cloud.aws.messaging.core.QueueMessagingTemplate;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doNothing;
@@ -25,12 +29,14 @@ import static org.mockito.Mockito.when;
 class PagamentoServiceImplTest {
 
 
-
-	PagamentoRepository pagamentoRepository = Mockito.mock(PagamentoRepository.class);
-
-	PagamentoMapper pagamentoMapper = new PagamentoMapper();
-
-	PagamentoServiceImpl pagamentoService = new PagamentoServiceImpl(pagamentoRepository,pagamentoMapper);
+	@Mock
+	PagamentoRepository pagamentoRepository;// = Mockito.mock(PagamentoRepository.class);
+	@Mock
+	PagamentoMapper pagamentoMapper; //= new PagamentoMapper();
+	@Mock
+	SQSEventPublisher sqsEventPublisher;
+	@InjectMocks
+	PagamentoServiceImpl pagamentoService; //= new PagamentoServiceImpl(pagamentoRepository,pagamentoMapper, new SQSEventPublisher(new QueueMessagingTe));
 	PagamentoDTO pagamentoDTO;
 	void dadoUmPagamentoDTO(){
 		pagamentoDTO = new PagamentoDTO(new BigDecimal(99999),"Joao","Santana");
@@ -147,6 +153,8 @@ class PagamentoServiceImplTest {
 				.contaDestino(pagamentoDTO.contaDestino())
 				.executado(false)
 				.build());
+
+		when(pagamentoMapper.pagamentoDtoToModel(Mockito.any())).thenCallRealMethod();
 
 	}
 
