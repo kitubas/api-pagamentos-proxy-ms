@@ -156,6 +156,8 @@ class PagamentoServiceImplTest {
 
 		when(pagamentoMapper.pagamentoDtoToModel(Mockito.any())).thenCallRealMethod();
 
+		doNothing().when(sqsEventPublisher).enviarMensagemStandardQueue(Mockito.any());
+
 	}
 
 
