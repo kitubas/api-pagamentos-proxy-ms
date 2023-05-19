@@ -3,6 +3,7 @@ package com.mentoria.apipagamentosproxyms.service;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import com.mentoria.apipagamentosproxyms.annotations.SendSNSMessages;
 import com.mentoria.apipagamentosproxyms.dto.PagamentoDTO;
 import com.mentoria.apipagamentosproxyms.exceptions.EdicaoDeContaOrigemException;
 import com.mentoria.apipagamentosproxyms.exceptions.PagamentoNaoPodeSerExcluidoException;
@@ -24,8 +25,12 @@ public class PagamentoServiceImpl implements PagamentoService {
     @Autowired
     PagamentoMapper pagamentoMapper;
 
+//    @Autowired
+//    SQSEventPublisherService sqsEventPublisherService;
+
+
     @Autowired
-    SQSEventPublisher sqsEventPublisher;
+    SNSEventPublisherService snsEventPublisherService;
 
     @Override
     public Pagamento criarPagamento(PagamentoDTO pagamentoDTO) {
@@ -34,7 +39,8 @@ public class PagamentoServiceImpl implements PagamentoService {
         pagamento.setDataHora(LocalDateTime.now().toString());
         pagamento.setExecutado(false);
         Pagamento savedPagamento = repository.save(pagamento);
-        sqsEventPublisher.enviarMensagemStandardQueue(savedPagamento);
+//        sqsEventPublisherService.enviarMensagemStandardQueue(savedPagamento);
+        snsEventPublisherService.enviarMensagemSns(savedPagamento);
         return savedPagamento;
 
     }

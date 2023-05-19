@@ -15,11 +15,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import com.mentoria.apipagamentosproxyms.model.Pagamento;
-import org.springframework.cloud.aws.messaging.core.QueueMessagingTemplate;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doNothing;
@@ -34,7 +32,7 @@ class PagamentoServiceImplTest {
 	@Mock
 	PagamentoMapper pagamentoMapper; //= new PagamentoMapper();
 	@Mock
-	SQSEventPublisher sqsEventPublisher;
+	SQSEventPublisherService sqsEventPublisherService;
 	@InjectMocks
 	PagamentoServiceImpl pagamentoService; //= new PagamentoServiceImpl(pagamentoRepository,pagamentoMapper, new SQSEventPublisher(new QueueMessagingTe));
 	PagamentoDTO pagamentoDTO;
@@ -156,7 +154,7 @@ class PagamentoServiceImplTest {
 
 		when(pagamentoMapper.pagamentoDtoToModel(Mockito.any())).thenCallRealMethod();
 
-		doNothing().when(sqsEventPublisher).enviarMensagemStandardQueue(Mockito.any());
+		doNothing().when(sqsEventPublisherService).enviarMensagemStandardQueue(Mockito.any());
 
 	}
 

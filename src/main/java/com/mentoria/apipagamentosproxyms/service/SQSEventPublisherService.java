@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.aws.messaging.core.NotificationMessagingTemplate;
 import org.springframework.cloud.aws.messaging.core.QueueMessagingTemplate;
 import org.springframework.stereotype.Service;
 
@@ -17,12 +18,13 @@ import java.util.UUID;
 
 @RequiredArgsConstructor
 @Service
-public class SQSEventPublisher {
+public class SQSEventPublisherService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SQSEventPublisher.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(SQSEventPublisherService.class);
 
     @NonNull
     private final QueueMessagingTemplate queueMessagingTemplate;
+
 
     @Autowired
     private AmazonSQS amazonSQS;
