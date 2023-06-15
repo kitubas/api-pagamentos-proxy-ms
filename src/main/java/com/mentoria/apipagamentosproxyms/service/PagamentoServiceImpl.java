@@ -3,17 +3,17 @@ package com.mentoria.apipagamentosproxyms.service;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.mentoria.apipagamentosproxyms.annotations.SendSNSMessages;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import com.mentoria.apipagamentosproxyms.dto.PagamentoDTO;
 import com.mentoria.apipagamentosproxyms.exceptions.EdicaoDeContaOrigemException;
 import com.mentoria.apipagamentosproxyms.exceptions.PagamentoNaoPodeSerExcluidoException;
 import com.mentoria.apipagamentosproxyms.mapper.PagamentoMapper;
-import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.mentoria.apipagamentosproxyms.model.Pagamento;
 import com.mentoria.apipagamentosproxyms.respository.PagamentoRepository;
+
+import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 @Service
