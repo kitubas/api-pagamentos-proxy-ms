@@ -32,7 +32,7 @@ class PagamentoServiceImplTest {
 	@Mock
 	PagamentoMapper pagamentoMapper; //= new PagamentoMapper();
 	@Mock
-	SQSEventPublisherService sqsEventPublisherService;
+	SNSEventPublisherService snsEventPublisherService;
 	@InjectMocks
 	PagamentoServiceImpl pagamentoService; //= new PagamentoServiceImpl(pagamentoRepository,pagamentoMapper, new SQSEventPublisher(new QueueMessagingTe));
 	PagamentoDTO pagamentoDTO;
@@ -154,7 +154,7 @@ class PagamentoServiceImplTest {
 
 		when(pagamentoMapper.pagamentoDtoToModel(Mockito.any())).thenCallRealMethod();
 
-		doNothing().when(sqsEventPublisherService).enviarMensagemStandardQueue(Mockito.any());
+		doNothing().when(snsEventPublisherService).enviarMensagemSns(Mockito.any());
 
 	}
 

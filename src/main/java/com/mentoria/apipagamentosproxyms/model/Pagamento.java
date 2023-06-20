@@ -80,6 +80,7 @@ public class Pagamento {
 
     @Override
     public boolean equals(Object obj) {
+
     	if (obj instanceof Pagamento pagamento) {
 
             return pagamento.getId().equals(this.id)
@@ -91,4 +92,15 @@ public class Pagamento {
 		}
     	return false;
     }
+
+
+//    return switch (obj){
+//        case Pagamento pagamento when pagamento.getId().equals(this.id)
+//                && pagamento.getContaOrigem().equals(this.contaOrigem)
+//                && pagamento.getDataHora().equals(this.dataHora)
+//                && pagamento.getContaDestino().equals(this.contaDestino)
+//                && pagamento.getValor().compareTo(this.valor)==0
+//                && pagamento.getExecutado().equals(this.executado) -> true;
+//        default -> false;
+//    };
 }

@@ -1,6 +1,7 @@
 package com.mentoria.apipagamentosproxyms.service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.UUID;
 
 import com.mentoria.apipagamentosproxyms.annotations.SendSNSMessages;
@@ -30,6 +31,7 @@ public class PagamentoServiceImpl implements PagamentoService {
 
 
     @Autowired
+    @SendSNSMessages
     SNSEventPublisherService snsEventPublisherService;
 
     @Override
