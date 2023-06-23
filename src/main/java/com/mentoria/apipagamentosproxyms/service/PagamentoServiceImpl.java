@@ -17,7 +17,6 @@ import com.mentoria.apipagamentosproxyms.model.Pagamento;
 import com.mentoria.apipagamentosproxyms.respository.PagamentoRepository;
 
 @AllArgsConstructor
-@Service
 public class PagamentoServiceImpl implements PagamentoService {
 
     @Autowired

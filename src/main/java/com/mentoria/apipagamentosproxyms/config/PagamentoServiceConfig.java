@@ -6,6 +6,7 @@ import com.mentoria.apipagamentosproxyms.respository.PagamentoRepository;
 import com.mentoria.apipagamentosproxyms.service.PagamentoService;
 import com.mentoria.apipagamentosproxyms.service.PagamentoServiceImpl;
 import com.mentoria.apipagamentosproxyms.service.SNSEventPublisherService;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

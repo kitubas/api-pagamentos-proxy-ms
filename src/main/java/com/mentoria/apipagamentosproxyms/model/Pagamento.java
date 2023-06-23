@@ -24,10 +24,8 @@ public class Pagamento {
     private BigDecimal valor;
     @NonNull
     private String contaDestino;
-
     @NonNull
     private String contaOrigem;
-
     private Boolean executado;
 
     public BigDecimal getValor() {
