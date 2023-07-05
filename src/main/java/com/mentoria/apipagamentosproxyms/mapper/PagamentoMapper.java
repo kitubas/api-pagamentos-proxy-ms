@@ -1,18 +1,26 @@
 package com.mentoria.apipagamentosproxyms.mapper;
 
-import com.mentoria.apipagamentosproxyms.dto.PagamentoDTO;
-import com.mentoria.apipagamentosproxyms.model.Pagamento;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
+import com.mentoria.apipagamentosproxyms.dto.PagamentoDTO;
+import com.mentoria.apipagamentosproxyms.model.Pagamento;
 
 @Component
 public class PagamentoMapper {
 
-    public Pagamento pagamentoDtoToModel(PagamentoDTO pagamentoDTO){
-        return new Pagamento(pagamentoDTO.valor(),
-                pagamentoDTO.contaDestino(),
-                pagamentoDTO.contaOrigem());
+    public Pagamento pagamentoDtoToModel(PagamentoDTO pagamentoDTO) {
+        return Pagamento.builder()
+                .valor(
+                        pagamentoDTO.valor())
+                .contaDestino(
+                        pagamentoDTO.contaDestino())
+                .contaOrigem(
+                        pagamentoDTO.contaOrigem())
+                .tipoPagamento(
+                        pagamentoDTO.tipoPagamento())
+                .dataHoraExecucao(
+                        pagamentoDTO.dataHoraExecucao())
+                .build();
     }
 
 }

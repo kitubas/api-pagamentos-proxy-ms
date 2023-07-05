@@ -49,7 +49,7 @@ public class PagamentoControllerTest {
     PagamentoDTO pagamentoDTO;
     @BeforeEach
     void dadoUmPagamentoDTO(){
-        pagamentoDTO = new PagamentoDTO(new BigDecimal(99999),"Joao","Santana");
+        pagamentoDTO = new PagamentoDTO(new BigDecimal(99999),"Joao","Santana", "IMEDIATO", "2023-06-30T12:31:40");
     }
 
 

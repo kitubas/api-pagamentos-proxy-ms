@@ -41,7 +41,7 @@ class PagamentoServiceImplTest {
 	PagamentoServiceImpl pagamentoService; //= new PagamentoServiceImpl(pagamentoRepository,pagamentoMapper, new SQSEventPublisher(new QueueMessagingTe));
 	PagamentoDTO pagamentoDTO;
 	void dadoUmPagamentoDTO(){
-		pagamentoDTO = new PagamentoDTO(new BigDecimal(99999),"Joao","Santana");
+		pagamentoDTO = new PagamentoDTO(new BigDecimal(99999),"Joao","Santana", "IMEDIATO", "2023-06-30T12:31:40");
 
 	}
 	@Test
@@ -87,7 +87,7 @@ class PagamentoServiceImplTest {
 		whenSavingTheEntity();
 		var pagamentoCriado = pagamentoService.criarPagamento(pagamentoDTO);
 
-		PagamentoDTO pagamentoEditado =new PagamentoDTO(new BigDecimal(8888),pagamentoCriado.getContaOrigem(),"oxe");
+		PagamentoDTO pagamentoEditado =new PagamentoDTO(new BigDecimal(8888),pagamentoCriado.getContaOrigem(),"oxe", "IMEDIATO", "2023-06-30T12:31:40");
 
 		whenEditingTheEntity(pagamentoCriado, pagamentoEditado);
 		Pagamento retornoPagamentoEditado = pagamentoService.editarPagamento(pagamentoCriado.getId(), pagamentoEditado);

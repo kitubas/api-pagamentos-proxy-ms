@@ -5,4 +5,4 @@ import lombok.NonNull;
 
 import java.math.BigDecimal;
 
-public record PagamentoDTO(@NonNull BigDecimal valor, @NonNull String contaOrigem, @NonNull String contaDestino) {}
+public record PagamentoDTO(@NonNull BigDecimal valor, @NonNull String contaOrigem, @NonNull String contaDestino, String tipoPagamento, String dataHoraExecucao) {}

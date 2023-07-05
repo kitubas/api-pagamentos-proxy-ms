@@ -14,6 +14,7 @@ import lombok.*;
 @NoArgsConstructor
 @RequiredArgsConstructor
 @Entity
+@Data
 public class Pagamento {
 
 	@Id
@@ -27,54 +28,9 @@ public class Pagamento {
     @NonNull
     private String contaOrigem;
     private Boolean executado;
-
-    public BigDecimal getValor() {
-        return valor;
-    }
-
-    public void setValor(BigDecimal valor) {
-        this.valor = valor;
-    }
-
-    public String getContaDestino() {
-        return contaDestino;
-    }
-
-    public void setContaDestino(String contaDestino) {
-        this.contaDestino = contaDestino;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public void setId(UUID id) {
-        this.id = id;
-    }
-
-    public String getDataHora() {
-        return dataHora;
-    }
-
-    public void setDataHora(String dataHora) {
-        this.dataHora = dataHora;
-    }
-
-    public String getContaOrigem() {
-        return contaOrigem;
-    }
-
-    public void setContaOrigem(String contaOrigem) {
-        this.contaOrigem = contaOrigem;
-    }
-
-    public Boolean getExecutado() {
-        return executado;
-    }
-
-    public void setExecutado(Boolean executado) {
-        this.executado = executado;
-    }
+    @NonNull
+    private String tipoPagamento;
+    private String dataHoraExecucao;
 
     @Override
     public boolean equals(Object obj) {
